@@ -21,19 +21,19 @@ Our aim with this article is to understand the popularity and meaning of "Oh my 
 ```{r, echo=FALSE, message=FALSE, results='hide', cache=FALSE, warning=FALSE}
 library(dplyr)
 Sys.setlocale("LC_TIME", "en_US.UTF-8")
-library(ggplot2)
-library(htm2txt)
-library(stringr)
-library(ngramr)
-library(extrafont)
-library(forecast)
-library(ggpubr)
-library(patchwork)
-library(usmap)
-library(wordcloud)
-library(RWeka)
-library(tm)
-options(scipen=20)
+library(ggplot2)  # ggplot2_3.3.2
+library(htm2txt)  # htm2txt_2.1.1 
+library(stringr)  # stringr_1.4.0
+library(ngramr)   # ngramr_1.7.2
+library(extrafont)# extrafont_0.17
+library(forecast) # forecast_8.13
+library(ggpubr)   # ggpubr_0.2.5
+library(patchwork)# patchwork_1.0.0
+library(usmap)    # usmap_0.5.1
+library(wordcloud)# wordcloud_2.6
+library(RWeka)    # RWeka_0.4-43
+library(tm)       # tm_0.7-8
+#options(scipen=4)
 ```
 
 
@@ -366,11 +366,13 @@ How is "oh my God" being used in social media nowadays? To explore this, we used
 
 plotdf <- data.frame(gender=c("male","female"), count=genderdf$count)
 p1 <- ggdonutchart(plotdf, "count", label ="gender", fill="gender", palette=c(rgb(0,0,1,0.5),rgb(1,0,0,0.5)), lab.pos ="in", font.family = "Gabriel Weiss' Friends Font", ggtheme = friends.theme)+ggtitle("OMG tweets")+ theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
-omgR <- sum(genderdf$femaleCount)/(sum(genderdf$femaleCount+genderdf$maleCount))
+
+omgR <- genderdf$count[genderdf$gender=="female"]/sum(genderdf$count)
 
 plotdf <- data.frame(gender=c("male","female"), count=genderdf$total)
 p2 <- ggdonutchart(plotdf, "count", label ="gender", fill="gender", palette=c(rgb(0,0,1,0.5),rgb(1,0,0,0.5)), lab.pos = "in", font.family = "Gabriel Weiss' Friends Font", ggtheme = friends.theme)+ggtitle("all tweets")+ theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
-totR<-sum(genderdf$femaleTotal)/(sum(genderdf$femaleTotal+genderdf$maleTotal))
+
+totR <- genderdf$total[genderdf$gender=="female"]/sum(genderdf$total)
 
 p1+p2
 ```
@@ -403,13 +405,13 @@ plot_usmap(data = omgstates, values = "perMillion", color = "black") +
 We can also use location information to see the regional distribution of OMG across the United States. Figure \@ref(fig:twitterstates) shows the US colored by the frequency of OMG per million tweets. One can see a higher frequency of OMG in the West coast and the northeast, with a lower frequency along the Bible belt. The top states by OMG frequency are Oregon and Washington, with California surprisingly low in 9th position.
 
 ```{r twitterstatestable, fig.width=7, fig.height=3, cache=TRUE, message=F, echo=F}
-knitr::kable(head(omgstates %>% select(sate=full, perMillion) %>% arrange(desc(perMillion)),10))
+knitr::kable(head(omgstates %>% select(state=full, perMillion) %>% arrange(desc(perMillion)),10))
 ```
 
 The bottom states by frequency of OMG in tweets are southern states like Mississippi and Louisiana. Since "Oh my God" can be considered blasphemy under traditional Christian values, one can expect the frequency of this expression to be lower in more conservative states. To test this idea, we collected the US 2020 presidential election results from https://cookpolitical.com/2020-national-popular-vote-tracker.
 
 ```{r twitterstatestable2, fig.width=7, fig.height=3, cache=TRUE, message=F, echo=F}
-knitr::kable(tail(omgstates %>% select(sate=full, perMillion) %>% arrange(desc(perMillion)),10))
+knitr::kable(tail(omgstates %>% select(state=full, perMillion) %>% arrange(desc(perMillion)),10))
 ```
 
 ```{r twittertrump, fig.width=7, fig.height=5, cache=TRUE, message=F, echo=F, fig.cap="Scatter plot of Donald Trump vote percentage in 2020 versus OMG per million tweets across US states. The line and shaded areas show the results of a linear fit.", fig.align='center'}
@@ -504,7 +506,7 @@ wordcloud(texts$clean, max.word=100,  family="Gabriel Weiss' Friends Font", scal
 
 The word "I" is by far the most frequent, followed by verbs and that express personal experiences and feelings. The word "like" is also visible, highlighting this way another of the language patterns of *valleyspeak*.
 
-To have an idea of the affective meanings of the phrase, we use a (RoBERTa model tuned for NLI)[https://huggingface.co/textattack/roberta-base-MNLI]. We set up a zero-shot classification task as a Natural Language Inference task that classifies the phrase "Oh my God!" using the hypothesis "This sentence expresses {}.", where the brackets are filled with a single word that will serve as the candidate label. As candidate labels, we use the [24 emotion words of the GRID project](
+To have an idea of the affective meanings of the phrase, we use a [RoBERTa model tuned for NLI](https://huggingface.co/textattack/roberta-base-MNLI). We set up a zero-shot classification task as a Natural Language Inference task that classifies the phrase "Oh my God!" using the hypothesis "This sentence expresses {}.", where the brackets are filled with a single word that will serve as the candidate label. As candidate labels, we use the [24 emotion words of the GRID project](
 https://www.unige.ch/cisa/research/topics/specific-research-projects/language-and-culture/grid-project/emotion-words/) [@fontaine2013components]. The words with the highest score in this task are the following:
 
 ```{python, eval=F, echo=F}

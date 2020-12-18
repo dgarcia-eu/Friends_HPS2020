@@ -6,6 +6,7 @@ stringr
 ngramr
 extrafont
 forecast
+magrittr
 ggpubr
 patchwork
 usmap
