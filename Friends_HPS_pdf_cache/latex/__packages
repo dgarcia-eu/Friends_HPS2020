@@ -1,0 +1,16 @@
+base
+dplyr
+ggplot2
+htm2txt
+stringr
+ngramr
+extrafont
+forecast
+ggpubr
+patchwork
+usmap
+RColorBrewer
+wordcloud
+RWeka
+NLP
+tm
